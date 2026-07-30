@@ -159,12 +159,16 @@ impl<T: ADBMessageTransport> ADBMessageDevice<T> {
     pub(crate) fn open_session(&mut self, cmd: &ADBLocalCommand) -> Result<ADBSession<T>> {
         let mut rng = rand::rng();
         let local_id: u32 = rng.random();
+        let mut destination = cmd.to_string().into_bytes();
+        if !destination.ends_with(&[0]) {
+            destination.push(0);
+        }
 
         let message = ADBTransportMessage::try_new(
             MessageCommand::Open,
             local_id, // Our 'local-id'
             0,
-            cmd.to_string().as_bytes(),
+            &destination,
         )?;
         self.transport.write_message(message)?;
 
