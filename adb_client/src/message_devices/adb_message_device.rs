@@ -159,6 +159,10 @@ impl<T: ADBMessageTransport> ADBMessageDevice<T> {
     pub(crate) fn open_session(&mut self, cmd: &ADBLocalCommand) -> Result<ADBSession<T>> {
         let mut rng = rand::rng();
         let local_id: u32 = rng.random();
+
+        // adbd used to expect a null-terminated string.
+        // keep doing so to maintain compatibility with older versions.
+        // https://cs.android.com/android/platform/superproject/+/android-latest-release:packages/modules/adb/sockets.cpp;l=560?q=sockets.cpp
         let mut destination = cmd.to_string().into_bytes();
         if !destination.ends_with(&[0]) {
             destination.push(0);
